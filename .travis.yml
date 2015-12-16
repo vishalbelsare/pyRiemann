@@ -1,6 +1,8 @@
 language: python
 python:
   - "2.7"
+  - "3.3"
+  - "3.4"
 
 # command to install dependencies\
 cache: pip
@@ -21,14 +23,8 @@ addons:
       - gfortran
       - python-tk
 install:
-  - virtualenv --system-site-packages testvenv
-  - source testvenv/bin/activate
   - pip install pip --upgrade
-  - pip install coverage python-coveralls nose scikit-learn
+  - pip install nose scikit-learn
   - python setup.py build install
 # command to run tests
-script: nosetests  --with-coverage --cover-package=pyriemann
-after_success:
-  - deactivate
-  - pip install python-coveralls --upgrade
-  - coveralls
+script: nosetests
