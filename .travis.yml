@@ -3,28 +3,12 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
-
 # command to install dependencies\
 cache: pip
 sudo: false
-virtualenv:
-  system_site_packages: true
-addons:
-  apt:
-    packages:
-      - python-scipy
-      - python-numpy
-      - libatlas-dev
-      - libatlas3gf-base
-      - libblas-dev
-      - liblapack-dev
-      - python-matplotlib
-      - python-pandas
-      - gfortran
-      - python-tk
+
 install:
   - pip install pip --upgrade
-  - pip install nose scikit-learn
   - python setup.py build install
 # command to run tests
 script: nosetests
