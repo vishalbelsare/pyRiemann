@@ -4,8 +4,8 @@
 API reference
 =============
 
-Covariance Estimation
----------------------
+SPD Matrices Estimation
+-----------------------
 .. _estimation_api:
 .. currentmodule:: pyriemann.estimation
 
@@ -16,9 +16,12 @@ Covariance Estimation
     Covariances
     ERPCovariances
     XdawnCovariances
-    CospCovariances
+    BlockCovariances
+    CrossSpectra
+    CoSpectra
     Coherences
-    HankelCovariances
+    TimeDelayCovariances
+    Kernels
     Shrinkage
 
 Embedding
@@ -28,9 +31,14 @@ Embedding
 
 .. autosummary::
     :toctree: generated/
+
+    locally_linear_embedding
+    barycenter_weights
+
     :template: class.rst
 
-    Embedding
+    SpectralEmbedding
+    LocallyLinearEmbedding
 
 Classification
 --------------
@@ -43,8 +51,28 @@ Classification
 
     MDM
     FgMDM
-    TSclassifier
+    TSClassifier
     KNearestNeighbor
+    SVC
+    MeanField
+
+.. autosummary::
+    :toctree: generated/
+    :template: function.rst
+
+    class_distinctiveness
+
+Regression
+--------------
+.. _regression_api:
+.. currentmodule:: pyriemann.regression
+
+.. autosummary::
+    :toctree: generated/
+    :template: class.rst
+
+    KNearestNeighborRegressor
+    SVR
 
 Clustering
 ------------------
@@ -110,6 +138,29 @@ Channel selection
     ElectrodeSelection
     FlatChannelRemover
 
+Transfer Learning
+-----------------
+.. _transfer_api:
+.. currentmodule:: pyriemann.transfer
+
+.. autosummary::
+    :toctree: generated/
+
+    encode_domains
+    decode_domains
+
+    :template: class.rst
+
+    TLSplitter
+    TLEstimator
+    TLClassifier
+    TLRegressor
+    TLDummy
+    TLCenter
+    TLScale
+    TLRotate
+    MDWM
+
 Stats
 ------------------
 .. _stats_api:
@@ -132,17 +183,18 @@ Datasets
 
     make_gaussian_blobs
     make_outliers
-    make_covariances
+    make_matrices
+    make_masks
     sample_gaussian_spd
-    generate_random_spd_matrix 
+    make_classification_transfer
 
 Utils function
 --------------
 
-Utils functions are low level functions that implement most base components of Riemannian Geometry.
+Utils functions are low level functions that implement most base components of Riemannian geometry.
 
-Covariance preprocessing
-~~~~~~~~~~~~~~~~~~~~~~~~
+Covariance processing
+~~~~~~~~~~~~~~~~~~~~~
 .. _covariance_api:
 .. currentmodule:: pyriemann.utils.covariance
 
@@ -150,8 +202,12 @@ Covariance preprocessing
     :toctree: generated/
 
     covariances
+    covariance_mest
+    covariance_sch
+    covariance_scm
     covariances_EP
     covariances_X
+    block_covariances
     cross_spectrum
     cospectrum
     coherence
@@ -167,15 +223,22 @@ Distances
     :toctree: generated/
 
     distance
+    distance_chol
     distance_euclid
-    distance_riemann
-    distance_logeuclid
-    distance_logdet
+    distance_harmonic
     distance_kullback
     distance_kullback_sym
+    distance_logchol
+    distance_logdet
+    distance_logeuclid
+    distance_poweuclid
+    distance_riemann
     distance_wasserstein
+    pairwise_distance
 
-Mean
+    distance_mahalanobis
+
+Means
 ~~~~~~~~~~~~~~~~~~~~~~
 .. _mean_api:
 .. currentmodule:: pyriemann.utils.mean
@@ -184,17 +247,34 @@ Mean
     :toctree: generated/
 
     mean_covariance
-    mean_euclid
-    mean_riemann
-    mean_logeuclid
-    mean_logdet
-    mean_wasserstein
     mean_ale
     mean_alm
+    mean_euclid
     mean_harmonic
+    mean_identity
     mean_kullback_sym
+    mean_logchol
+    mean_logdet
+    mean_logeuclid
+    mean_power
+    mean_poweuclid
+    mean_riemann
+    mean_wasserstein
+    maskedmean_riemann
+    nanmean_riemann
 
-Geodesic
+Medians
+~~~~~~~~~~~~~~~~~~~~~~
+.. _median_api:
+.. currentmodule:: pyriemann.utils
+
+.. autosummary::
+    :toctree: generated/
+
+    median_euclid
+    median_riemann
+
+Geodesics
 ~~~~~~~~~~~~~~~~~~~~~~
 .. _geodesic_api:
 .. currentmodule:: pyriemann.utils.geodesic
@@ -203,9 +283,24 @@ Geodesic
     :toctree: generated/
 
     geodesic
-    geodesic_riemann
     geodesic_euclid
+    geodesic_logchol
     geodesic_logeuclid
+    geodesic_riemann
+    geodesic_wasserstein
+
+Kernels
+~~~~~~~~~~~~~~~~~~~~~~
+.. _kernel_api:
+.. currentmodule:: pyriemann.utils.kernel
+
+.. autosummary::
+    :toctree: generated/
+
+    kernel
+    kernel_euclid
+    kernel_logeuclid
+    kernel_riemann
 
 Tangent Space
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -215,6 +310,18 @@ Tangent Space
 .. autosummary::
     :toctree: generated/
 
+    exp_map_euclid
+    exp_map_logchol
+    exp_map_logeuclid
+    exp_map_riemann
+    exp_map_wasserstein
+    log_map_euclid
+    log_map_logchol
+    log_map_logeuclid
+    log_map_riemann
+    log_map_wasserstein
+    upper
+    unupper
     tangent_space
     untangent_space
 
@@ -226,11 +333,14 @@ Base
 .. autosummary::
     :toctree: generated/
 
-    sqrtm
-    invsqrtm
     expm
+    invsqrtm
     logm
     powm
+    sqrtm
+    nearest_sym_pos_def
+    ddexpm
+    ddlogm
 
 Aproximate Joint Diagonalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -240,9 +350,31 @@ Aproximate Joint Diagonalization
 .. autosummary::
     :toctree: generated/
 
-    rjd
+    ajd
     ajd_pham
+    rjd
     uwedge
+
+Matrix Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _mat_test_api:
+.. currentmodule:: pyriemann.utils.test
+
+.. autosummary::
+    :toctree: generated/
+
+    is_square
+    is_sym
+    is_skew_sym
+    is_real
+    is_real_type
+    is_hermitian
+    is_pos_def
+    is_pos_semi_def
+    is_sym_pos_def
+    is_sym_pos_semi_def
+    is_herm_pos_def
+    is_herm_pos_semi_def
 
 Visualization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -252,7 +384,9 @@ Visualization
 .. autosummary::
     :toctree: generated/
 
-    plot_confusion_matrix
-    plot_embedding
+    plot_bihist
+    plot_biscatter
     plot_cospectra
+    plot_cov_ellipse
+    plot_embedding
     plot_waveforms

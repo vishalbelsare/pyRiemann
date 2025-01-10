@@ -1,16 +1,12 @@
 import sys
 import math
 import numpy as np
+from sklearn.model_selection import cross_val_score
 
-from .utils.utils import check_version
 from .utils.distance import distance, pairwise_distance
 from .utils.mean import mean_covariance
+from .utils.utils import check_metric
 from .classification import MDM
-
-if check_version('sklearn', '0.18'):
-    from sklearn.model_selection import cross_val_score
-else:
-    from sklearn.cross_validation import cross_val_score
 
 
 def multiset_perm_number(y):
@@ -45,13 +41,12 @@ class BasePermutation():
         X : array-like
             The data to fit. Can be, for example a list, or an array at
             least 2d.
-
         y : array-like
             The target variable to try to predict in the case of
             supervised learning.
 
-        verbose: bool
-            if true, print progress.
+        verbose : bool, default=True
+            If true, print progress.
         """
         Npe = multiset_perm_number(y)
         self.scores_ = np.zeros(np.min([self.n_perms, int(Npe)]))
@@ -114,19 +109,18 @@ class BasePermutation():
 
         Parameters
         ----------
-        nbins : integer or array_like or 'auto', optional
+        nbins : integer or array_like or 'auto', default=10
             If an integer is given, bins + 1 bin edges are returned,
             consistently with np.histogram() for numpy version >= 1.3.
             Unequally spaced bins are supported if bins is a sequence.
-
-        range : tuple or None, optional
+        range : tuple or None, default=None
             The lower and upper range of the bins. Lower and upper outliers are
             ignored. If not provided, range is (x.min(), x.max()).
             Range has no effect if bins is a sequence.
             If bins is a sequence or range is specified, autoscaling is based
             on the specified bin range instead of the range of x.
 
-        axes : axes handle (default None)
+        axes : axes handle, default=None
             Axes handle for matplotlib. if None a new figure will be created.
         """
         try:
@@ -158,36 +152,31 @@ class PermutationModel(BasePermutation):
 
     Parameters
     ----------
-    n_perms : int  (default: 100)
+    n_perms : int, default=100
         The number of permutation. The minimum should be 20 for a resolution of
         0.05 p-value.
-
-    model : sklearn compatible model, (default: MDM())
+    model : sklearn compatible model, default=MDM()
         The model for scoring.
-
-    cv : int, (default 3) cross-validation generator or an iterable, optional
+    cv : int or cross-validation generator or an iterable, default=3
         Determines the cross-validation splitting strategy.
         Possible inputs for cv are:
 
-          - None, to use the default 3-fold cross validation,
-          - integer, to specify the number of folds in a `(Stratified)KFold`,
-          - An object to be used as a cross-validation generator.
-          - An iterable yielding train, test splits.
+        - None, to use the default 3-fold cross validation;
+        - integer, to specify the number of folds in a `(Stratified)KFold`;
+        - an object to be used as a cross-validation generator;
+        - an iterable yielding train, test splits.
 
         For integer/None inputs, if the estimator is a classifier and `y` is
-        either binary or multiclass, :class:`StratifiedKFold` is used. In all
+        either binary or multiclass, `StratifiedKFold` is used. In all
         other cases, `KFold` is used.
-
-    scoring : string, callable or None, optional, default: None
+    scoring : string or callable or None, default=None
         A string (see model evaluation documentation) or
         a scorer callable object / function with signature
         `scorer(estimator, X, y)`.
-
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
-
-    random_state : int (default 42)
+    random_state : int, default=42
         random state for the permutation test.
 
     Attributes
@@ -250,7 +239,7 @@ class PermutationDistance(BasePermutation):
 
     - 'pairwise' :
         the statistic is based on paiwire distance as
-        descibed in [1]. This is the fastest option for low sample size since
+        descibed in [1]_. This is the fastest option for low sample size since
         the pairwise distance matrix does not need to be estimated for each
         permutation.
 
@@ -267,31 +256,25 @@ class PermutationDistance(BasePermutation):
 
     Parameters
     ----------
-    n_perms : int  (default: 100)
+    n_perms : int, default=100
         The number of permutation. The minimum should be 20 for a resolution of
         0.05 p-value.
-
-    metric : string | dict (default: 'riemann')
-        The type of metric used for centroid and distance estimation.
-        see `distance` anb `mean_covariance` for the list of supported metric.
-        the metric could be a dict with two keys, `mean` and `distance` in
-        order to pass different metric for the centroid estimation and the
-        distance estimation. Typical usecase is to pass 'logeuclid' metric for
-        the mean in order to boost the computional speed and 'riemann' for the
-        distance in order to keep the good sensitivity for the classification.
-
-    mode : string (default: 'pairwise')
+    metric : string | dict, default="riemann"
+        Metric used for mean estimation (for the list of supported metrics,
+        see :func:`pyriemann.utils.mean.mean_covariance`) and
+        for distance estimation
+        (see :func:`pyriemann.utils.distance.distance`).
+        The metric can be a dict with two keys, "mean" and "distance"
+        in order to pass different metrics.
+    mode : string, default='pairwise'
         Type of statistic to use. could be 'pairwise', 'ttest' of 'ftest'
-
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
-
-    random_state : int (default 42)
+    random_state : int, default=42
         random state for the permutation test.
-
-    estimator : sklearn compatible estimator
-        if provided, data are transformed before every permutation. should
+    estimator : None or sklearn compatible estimator, default=None
+        If provided, data are transformed before every permutation. should
         not be used unless a supervised opperation must be applied on the data.
         This would be the case for ERP covariance.
 
@@ -309,13 +292,14 @@ class PermutationDistance(BasePermutation):
 
     References
     ----------
-    .. [1] Anderson, J. "A new method for non-parametric multivariate analysis
-        of variance." Austral ecology. 2001.
+    .. [1] `A new method for non-parametric multivariate analysis of variance
+        <https://doi.org/10.1111/j.1442-9993.2001.01070.pp.x>`_
+        M. Anderson. Austral ecology, Volume 26, Issue 1, February 2001.
     """
 
     def __init__(self,
                  n_perms=100,
-                 metric='riemann',
+                 metric="riemann",
                  mode='pairwise',
                  n_jobs=1,
                  random_state=42,
@@ -338,7 +322,6 @@ class PermutationDistance(BasePermutation):
         X : array-like
             The data to fit. Can be, for example a list, or an array at
             least 2d.
-
         y : array-like
             The target variable to try to predict in the case of
             supervised learning.
@@ -365,10 +348,11 @@ class PermutationDistance(BasePermutation):
     def __init_transform(self, X):
         """Init tr"""
         self.mdm = MDM(metric=self.metric, n_jobs=self.n_jobs)
+        self.mdm.metric_mean, self.mdm.metric_dist = check_metric(self.metric)
         if self.mode == 'ftest':
             self.global_mean = mean_covariance(X, metric=self.mdm.metric_mean)
         elif self.mode == 'pairwise':
-            X = pairwise_distance(X, metric=self.mdm.metric_dist)**2
+            X = pairwise_distance(X, metric=self.mdm.metric_dist, squared=True)
         return X
 
     def _score_ftest(self, X, y):
@@ -381,16 +365,23 @@ class PermutationDistance(BasePermutation):
         between = 0
         for ix, classe in enumerate(mdm.classes_):
             di = distance(
-                covmeans[ix], self.global_mean, metric=mdm.metric_dist)**2
+                covmeans[ix],
+                self.global_mean,
+                metric=mdm.metric_dist,
+                squared=True,
+            )
             between += np.sum(y == classe) * di
         between /= (n_classes - 1)
 
         # estimates within class variability
         within = 0
         for ix, classe in enumerate(mdm.classes_):
-            within += (distance(
-                X[y == classe], covmeans[ix], metric=mdm.metric_dist)
-                ** 2).sum()
+            within += distance(
+                X[y == classe],
+                covmeans[ix],
+                metric=mdm.metric_dist,
+                squared=True,
+            ).sum()
         within /= (len(y) - n_classes)
 
         score = between / within
@@ -409,9 +400,12 @@ class PermutationDistance(BasePermutation):
 
         dist = 0
         for ix, classe in enumerate(mdm.classes_):
-            di = (distance(
-                X[y == classe], covmeans[ix], metric=mdm.metric_dist)
-                ** 2).mean()
+            di = distance(
+                X[y == classe],
+                covmeans[ix],
+                metric=mdm.metric_dist,
+                squared=True,
+            ).mean()
             dist += (di / np.sum(y == classe))
         score = mean_dist / np.sqrt(dist)
         return score
@@ -425,7 +419,7 @@ class PermutationDistance(BasePermutation):
         pattern = np.zeros((n_samples, n_samples))
         for classe in classes:
             ix = (y == classe)
-            pattern += (np.outer(ix, ix) / np.float(ix.sum()))
+            pattern += (np.outer(ix, ix) / ix.sum())
 
         within_ss = (X * pattern).sum() / 2
 

@@ -1,8 +1,9 @@
-import pytest
-import numpy as np
 from functools import partial
 
-from pyriemann.datasets import make_covariances
+import numpy as np
+import pytest
+
+from pyriemann.datasets import make_masks, make_matrices
 
 
 def requires_module(function, name, call=None):
@@ -30,39 +31,68 @@ def rndstate():
 
 
 @pytest.fixture
-def get_covmats(rndstate):
-    def _gen_cov(n_trials, n_chan):
-        return make_covariances(n_trials, n_chan, rndstate,
-                                return_params=False)
+def get_mats(rndstate):
+    def _gen_mat(n_matrices, n_dim, kind):
+        return make_matrices(n_matrices, n_dim, kind, rndstate,
+                             return_params=False)
 
-    return _gen_cov
+    return _gen_mat
 
 
 @pytest.fixture
-def get_covmats_params(rndstate):
-    def _gen_cov_params(n_trials, n_chan):
-        return make_covariances(n_trials, n_chan, rndstate, return_params=True)
+def get_mats_params(rndstate):
+    def _gen_mat_params(n_matrices, n_dim, kind):
+        return make_matrices(n_matrices, n_dim, kind, rndstate,
+                             return_params=True, eigvecs_same=True)
 
-    return _gen_cov_params
+    return _gen_mat_params
+
+
+@pytest.fixture
+def get_weights(rndstate):
+    def _gen_weight(n_matrices):
+        return 1 + rndstate.rand(n_matrices)
+
+    return _gen_weight
 
 
 @pytest.fixture
 def get_labels():
-    def _get_labels(n_trials, n_classes):
-        return np.arange(n_classes).repeat(n_trials // n_classes)
+    def _get_labels(n_matrices, n_classes):
+        return np.arange(n_classes).repeat(n_matrices // n_classes)
 
     return _get_labels
 
 
+@pytest.fixture
+def get_masks(rndstate):
+    def _gen_masks(n_matrices, n_channels):
+        return make_masks(n_matrices, n_channels, n_channels // 2, rndstate)
+
+    return _gen_masks
+
+
+@pytest.fixture
+def get_targets():
+    def _gen_targets(n_matrices):
+        return np.random.rand(n_matrices)
+
+    return _gen_targets
+
+
 def get_distances():
     distances = [
-        "riemann",
-        "logeuclid",
+        "chol",
         "euclid",
-        "logdet",
+        "harmonic",
         "kullback",
         "kullback_right",
         "kullback_sym",
+        "logchol",
+        "logdet",
+        "logeuclid",
+        "riemann",
+        "wasserstein",
     ]
     for dist in distances:
         yield dist
@@ -70,15 +100,16 @@ def get_distances():
 
 def get_means():
     means = [
-        "riemann",
-        "logeuclid",
-        "euclid",
-        "logdet",
-        "identity",
-        "wasserstein",
         "ale",
+        "euclid",
         "harmonic",
+        "identity",
         "kullback_sym",
+        "logchol",
+        "logdet",
+        "logeuclid",
+        "riemann",
+        "wasserstein",
     ]
     for mean in means:
         yield mean
@@ -86,11 +117,11 @@ def get_means():
 
 def get_metrics():
     metrics = [
-        "riemann",
-        "logeuclid",
         "euclid",
         "logdet",
+        "logeuclid",
         "kullback_sym",
+        "riemann",
     ]
     for met in metrics:
         yield met
